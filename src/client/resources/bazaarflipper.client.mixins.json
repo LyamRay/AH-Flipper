@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.lyamray.bazzaarflipper.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "HandledScreenClose",
+    "HandledScreenAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
