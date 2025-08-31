@@ -8,19 +8,12 @@
 
 package me.lyamray.bazzaarflipper.mixin.client;
 
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.screen.ScreenHandler;
+import net.minecraft.client.Mouse;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(HandledScreen.class)
-public interface HandledScreenAccessor {
-    @Accessor("handler")
-    ScreenHandler getHandler();
-
-    @Accessor("x")
-    int getX();
-
-    @Accessor("y")
-    int getY();
+@Mixin(Mouse.class)
+public interface MouseAccessor {
+    @Invoker("onCursorPos")
+    void callOnCursorPos(long window, double x, double y);
 }
