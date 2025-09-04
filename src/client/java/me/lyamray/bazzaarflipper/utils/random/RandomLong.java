@@ -16,6 +16,6 @@ import java.util.Random;
 public class RandomLong {
 
     public long generateRandomLong() {
-        return 3000L + new Random().nextInt(10000);
+        return 3000L + new Random().nextInt(6000);
     }
 }

@@ -1,3 +1,11 @@
+/*
+ * DISCLAIMER:
+ * This mod was intentionally created for a private project of the creator of this mod.
+ * Use of this mod on any other server is at your own risk.
+ * The creator of this mod is not responsible for any actions, damages, or consequences
+ * that may occur from its use outside the intended private project.
+ */
+
 package me.lyamray.bazzaarflipper.handlers.steps.filled;
 
 import lombok.Getter;
@@ -21,6 +29,7 @@ public class CheckIsFilled extends BaseSteps {
     private static final CheckIsFilled instance = new CheckIsFilled();
 
     private static final int CHECK_SLOT = 19;
+    private static final long random = getInstance().generateDelay();
 
     public void checkIfGemIsFilled(MinecraftClient client, ScreenHandler handler) {
         if (!(client.currentScreen instanceof HandledScreen<?>)) return;
@@ -31,19 +40,43 @@ public class CheckIsFilled extends BaseSteps {
         ItemStack stack = slot.getStack();
         int tooltipLines = getTooltipLines(stack, client);
 
-        if (tooltipLines > 10) {
-            runDelayed(client, generateDelay(), c -> {
-                ClickSlotHandler.getInstance().clickSlotSimulated(c, CHECK_SLOT, handler);
-                SharedSteps.getInstance().closeInventory(c);
-                BazaarflipperClient.getInstance().setSellOrOrder("sell");
-            });
-        } else {
-            runDelayed(client, generateDelay(), c -> {
-                ClickSlotHandler.getInstance().clickSlotSimulated(c, CHECK_SLOT, handler);
-                // Next action can be buying logic
-            });
+        if (tooltipLines > 10) { //if filled
+            BazaarflipperClient.getInstance().setSellOrOrder("sell");
+            doSellLogic(client, handler);
+        } else { //if not filled
+            BazaarflipperClient.getInstance().setSellOrOrder("buy");
+            redoBuyLogic(client, handler);
         }
     }
+
+    private void doSellLogic(MinecraftClient client, ScreenHandler handler) {
+        long firstDelay = generateDelay();
+        long secondDelay = firstDelay + generateDelay();
+
+        runDelayed(() -> ClickSlotHandler.getInstance().clickSlotSimulated(client, CHECK_SLOT, handler), firstDelay);
+
+        runDelayed(() -> {
+            SharedSteps.getInstance().closeInventory(client);
+            SharedSteps.getInstance().performBazaarCommand(client, random);
+        }, secondDelay);
+    }
+
+
+    private void redoBuyLogic(MinecraftClient client, ScreenHandler handler) {
+        long firstDelay = generateDelay();
+        long secondDelay = firstDelay + generateDelay();
+        long thirdDelay = secondDelay + generateDelay();
+
+        runDelayed(() -> ClickSlotHandler.getInstance().clickSlotSimulated(client, CHECK_SLOT, handler), firstDelay);
+
+        runDelayed(() -> ClickSlotHandler.getInstance().clickSlotSimulated(client, 11, handler), secondDelay);
+
+        runDelayed(() -> {
+            SharedSteps.getInstance().closeInventory(client);
+            SharedSteps.getInstance().performBazaarCommand(client, random);
+        }, thirdDelay);
+    }
+
 
     private int getTooltipLines(ItemStack stack, MinecraftClient client) {
         List<Text> tooltip = stack.getTooltip(

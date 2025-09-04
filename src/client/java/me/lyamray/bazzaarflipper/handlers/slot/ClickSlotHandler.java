@@ -75,6 +75,8 @@ public class ClickSlotHandler {
         double prevX = startX;
         double prevY = startY;
 
+        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+
         for (int i = 1; i <= steps; i++) {
             double t = i / (double) steps;
 
@@ -99,6 +101,8 @@ public class ClickSlotHandler {
 
         GLFW.glfwSetCursorPos(window, endX, endY);
         ((MouseAccessor) MinecraftClient.getInstance().mouse).callOnCursorPos(window, endX, endY);
+
+        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
     }
 
     private int randomOffset() {
