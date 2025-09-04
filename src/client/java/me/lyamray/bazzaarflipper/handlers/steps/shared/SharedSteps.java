@@ -7,6 +7,7 @@ import me.lyamray.bazzaarflipper.handlers.steps.handler.AbstractGemStep;
 import me.lyamray.bazzaarflipper.handlers.steps.order.OrderSteps;
 import me.lyamray.bazzaarflipper.handlers.steps.sell.SellSteps;
 import me.lyamray.bazzaarflipper.handlers.steps.sold.CheckIsSold;
+import me.lyamray.bazzaarflipper.mixin.client.HandledScreenAccessor;
 import me.lyamray.bazzaarflipper.utils.messages.MessageUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -113,6 +114,7 @@ public class SharedSteps extends AbstractGemStep {
         ScreenHandler screenHandler = getScreenHandler(client);
         if (screenHandler == null) {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] manageOrders: No screen handler"));
+            runDelayed(() -> manageOrders(client), generateDelay());
             return;
         }
 
@@ -122,8 +124,10 @@ public class SharedSteps extends AbstractGemStep {
             return;
         }
 
-        long threeMinutes = 3 * 60 * 1000;
+        long threeMinutes = 300000;
+
         MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Scheduling manageOrders click (slot 50) in " + threeMinutes + "ms for mode: " + mode));
+
         runDelayed(() -> {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Clicking slot 50 in manageOrders for mode: " + mode));
             ClickSlotHandler.getInstance().clickSlotSimulated(client, 50, screenHandler);
@@ -141,6 +145,7 @@ public class SharedSteps extends AbstractGemStep {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] performBazaarCommand: No network handler"));
             return;
         }
+
         runDelayed(() -> {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Sending bazaar chat command"));
             client.getNetworkHandler().sendChatCommand("baz");
@@ -184,11 +189,10 @@ public class SharedSteps extends AbstractGemStep {
     public void closeInventory(MinecraftClient client) {
         MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Scheduling inventory close in 1000ms"));
         runDelayed(() -> {
-            if (client.player != null) {
-                MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Closing handled screen"));
+            if (client.player != null && client.currentScreen instanceof HandledScreenAccessor) {
                 client.player.closeHandledScreen();
+                client.setScreen(null);
             }
-            client.setScreen(null);
         }, 1000L);
     }
 }

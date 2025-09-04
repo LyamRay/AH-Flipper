@@ -99,10 +99,14 @@ public class CheckIsFilled extends BaseSteps {
         }, secondDelay);
 
         runDelayed(() -> {
+
+            long delay = generateDelay();
+            long delay2 = delay + generateDelay();
+
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Closing inventory and performing Bazaar command (buy)"));
             SharedSteps.getInstance().closeInventory(client);
-            SharedSteps.getInstance().performBazaarCommand(client, generateDelay());
-            SharedSteps.getInstance().miningLogic(client, generateDelay());
+            SharedSteps.getInstance().performBazaarCommand(client, delay2);
+            SharedSteps.getInstance().miningLogic(client, delay2);
         }, thirdDelay);
     }
 

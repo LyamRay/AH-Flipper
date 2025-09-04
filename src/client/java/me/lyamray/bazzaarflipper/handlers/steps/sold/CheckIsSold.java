@@ -62,6 +62,9 @@ public class CheckIsSold extends BaseSteps {
         runDelayed(() -> {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Clicking slot " + CHECK_SLOT + " (sold)"));
             ClickSlotHandler.getInstance().clickSlotSimulated(client, CHECK_SLOT, handler);
+
+            String message = "<color:#c9ffe2>Je hebt succesvol een gem gesold!</color>";
+            MessageUtil.sendMessage(MessageUtil.makeComponent(message));
         }, firstDelay);
 
         runDelayed(() -> {
@@ -88,12 +91,12 @@ public class CheckIsSold extends BaseSteps {
 
         runDelayed(() -> {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Clicking slot 11 (redo sell)"));
-            ClickSlotHandler.getInstance().clickSlotSimulated(client, 11, handler);
+            ClickSlotHandler.getInstance().clickSlotSimulated(client, 13, handler);
+            SharedSteps.getInstance().closeInventory(client);
         }, secondDelay);
 
         runDelayed(() -> {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Closing inventory, performing Bazaar command and mining logic"));
-            SharedSteps.getInstance().closeInventory(client);
             SharedSteps.getInstance().performBazaarCommand(client, generateDelay());
             SharedSteps.getInstance().miningLogic(client, generateDelay());
         }, thirdDelay);

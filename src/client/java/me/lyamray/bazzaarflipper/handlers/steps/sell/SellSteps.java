@@ -21,7 +21,10 @@ public class SellSteps extends AbstractGemStep {
         }
 
         MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Choosing gem slot: " + slot));
-        clickSlot(client, slot, () -> {
+
+        long delay = generateDelay();
+
+        clickSlot(client, slot, delay,() -> {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Finished choosing gem, calling clickBestGemSlot"));
             SharedSteps.getInstance().clickBestGemSlot(client);
         });
@@ -29,7 +32,10 @@ public class SellSteps extends AbstractGemStep {
 
     public void createSellOrder(MinecraftClient client) {
         MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Creating sell order, clicking slot 16"));
-        clickSlot(client, 16, () -> {
+
+        long delay = generateDelay();
+
+        clickSlot(client, 16, delay,() -> {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Finished clicking slot 16, calling bestOfferMinusOne"));
             bestOfferMinusOne(client);
         });
@@ -37,7 +43,10 @@ public class SellSteps extends AbstractGemStep {
 
     public void bestOfferMinusOne(MinecraftClient client) {
         MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Clicking slot 12 for best offer minus one"));
-        clickSlot(client, 12, () -> {
+
+        long delay = generateDelay();
+
+        clickSlot(client, 12, delay,() -> {
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Finished bestOfferMinusOne, calling alwaysBeOnTop"));
             SharedSteps.getInstance().alwaysBeOnTop(client);
         });
@@ -45,19 +54,21 @@ public class SellSteps extends AbstractGemStep {
 
     public void confirmOrder(MinecraftClient client) {
         MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Confirming sell order, clicking slot 13"));
-        clickSlot(client, 13, () -> {
+
+        long delay = generateDelay();
+
+        clickSlot(client, 13, delay,() -> {
             String message = "<color:#c9ffe2>Je hebt succesvol een sell-offer geplaatst!</color>";
-
             MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Sell confirmed: " + message));
-            SharedSteps.getInstance().manageOrders(client);
-
-            long delay = generateDelay();
-            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Scheduling inventory close and bazaar command in " + delay + "ms"));
-
-            runDelayed(() -> {
-                SharedSteps.getInstance().closeInventory(client);
-                SharedSteps.getInstance().performBazaarCommand(client, random);
-            }, delay);
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Scheduling inventory close and bazaar command in " + delay + "ms"));
+            SharedSteps.getInstance().performBazaarCommand(client, random);
         });
+
+        long delay1 = generateDelay();
+
+        runDelayed(() -> {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][SellSteps] Scheduling manageOrders in " + delay1 + "ms"));
+            SharedSteps.getInstance().manageOrders(client);
+        }, delay1);
     }
 }

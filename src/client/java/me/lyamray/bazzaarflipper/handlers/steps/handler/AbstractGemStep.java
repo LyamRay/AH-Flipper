@@ -26,14 +26,14 @@ public abstract class AbstractGemStep extends BaseSteps {
         }
     }
 
-    protected void clickSlot(MinecraftClient client, int slotIndex, Runnable nextTask) {
+    protected void clickSlot(MinecraftClient client, int slotIndex, long delay, Runnable nextTask) {
         ScreenHandler handler = getScreenHandler(client);
         if (handler == null) return;
 
         TimerUtil.getInstance().runTaskLater(() -> {
             ClickSlotHandler.getInstance().clickSlotSimulated(client, slotIndex, handler);
             if (nextTask != null) nextTask.run();
-        }, generateDelay());
+        }, delay);
     }
 
     protected void executeByMode(MinecraftClient client, Consumer<String> orderTask, Consumer<String> sellTask) {
