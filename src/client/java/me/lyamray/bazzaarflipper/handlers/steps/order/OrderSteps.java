@@ -1,11 +1,3 @@
-/*
- * DISCLAIMER:
- * This mod was intentionally created for a private project of the creator of this mod.
- * Use of this mod on any other server is at your own risk.
- * The creator of this mod is not responsible for any actions, damages, or consequences
- * that may occur from its use outside the intended private project.
- */
-
 package me.lyamray.bazzaarflipper.handlers.steps.order;
 
 import lombok.Getter;
@@ -21,31 +13,53 @@ public class OrderSteps extends AbstractGemStep {
     private static final OrderSteps instance = new OrderSteps();
 
     private static final long random = getInstance().generateDelay();
+
     public void chooseWhichGem(MinecraftClient client) {
         int slot = getGemSlot(BazaarflipperClient.getInstance().getGem());
-        if (slot == -1) return;
+        if (slot == -1) {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] chooseWhichGem: No gem slot found"));
+            return;
+        }
 
-        clickSlot(client, slot, () -> SharedSteps.getInstance().clickBestGemSlot(client));
+        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Choosing gem slot: " + slot));
+        clickSlot(client, slot, () -> {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Finished choosing gem, calling clickBestGemSlot"));
+            SharedSteps.getInstance().clickBestGemSlot(client);
+        });
     }
 
     public void createBuyOrder(MinecraftClient client) {
-        clickSlot(client, 15, () -> buyOneGem(client));
+        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Creating buy order, clicking slot 15"));
+        clickSlot(client, 15, () -> {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Finished clicking slot 15, calling buyOneGem"));
+            buyOneGem(client);
+        });
     }
 
     public void buyOneGem(MinecraftClient client) {
-        clickSlot(client, 10, () -> SharedSteps.getInstance().alwaysBeOnTop(client));
+        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Clicking slot 10 to buy one gem"));
+        clickSlot(client, 10, () -> {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Finished buying one gem, calling alwaysBeOnTop"));
+            SharedSteps.getInstance().alwaysBeOnTop(client);
+        });
     }
 
     public void confirmOrder(MinecraftClient client) {
+        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Confirming order, clicking slot 13"));
+
         clickSlot(client, 13, () -> {
             String message = "<color:#c9ffe2>Je hebt succesvol een buy-order geplaatst!</color>";
-            MessageUtil.sendMessage(MessageUtil.makeComponent(message));
-            SharedSteps.getInstance().manageOrders(client);
-        });
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Order confirmed: " + message));
 
-        runDelayed(() -> {
-            SharedSteps.getInstance().closeInventory(client);
-            SharedSteps.getInstance().performBazaarCommand(client, random);
-        }, generateDelay());
+            SharedSteps.getInstance().manageOrders(client);
+
+            long delay = generateDelay();
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Scheduling inventory close and bazaar command in " + delay + "ms"));
+
+            runDelayed(() -> {
+                SharedSteps.getInstance().closeInventory(client);
+                SharedSteps.getInstance().performBazaarCommand(client, random);
+            }, delay);
+        });
     }
 }

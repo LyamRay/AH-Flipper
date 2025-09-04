@@ -1,4 +1,5 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'fabric-loom' version '1.11.7'
     id 'maven-publish'
 }
@@ -55,6 +56,27 @@ dependencies {
     modImplementation("net.kyori:adventure-platform-fabric:6.4.0")
 }
 
+tasks.named('shadowJar') {
+    archiveClassifier.set('all')
+    mergeServiceFiles()
+
+    // Ensure mod resources (like mixin JSON) stay at the root
+    from(sourceSets.main.resources.srcDirs) {
+        include '**/*.json'
+        include '**/*.properties'
+        include '**/*.toml'
+        include '**/*.png' // include any other resources your mod needs
+        into '' // put them at the root of the JAR
+    }
+
+    // Only relocate external libraries if needed, do NOT relocate your own packages
+    // Example: relocate("net.kyori", "bazaarflipper.libs.net.kyori")
+}
+
+tasks.named('shadowJar') {
+    dependsOn processResources
+}
+
 processResources {
     inputs.property "version", project.version
     inputs.property "minecraft_version", project.minecraft_version
@@ -62,9 +84,11 @@ processResources {
     filteringCharset "UTF-8"
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version,
+        expand(
+                "version": project.version,
                 "minecraft_version": project.minecraft_version,
                 "loader_version": project.loader_version
+        )
     }
 }
 

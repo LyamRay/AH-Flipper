@@ -1,11 +1,3 @@
-/*
- * DISCLAIMER:
- * This mod was intentionally created for a private project of the creator of this mod.
- * Use of this mod on any other server is at your own risk.
- * The creator of this mod is not responsible for any actions, damages, or consequences
- * that may occur from its use outside the intended private project.
- */
-
 package me.lyamray.bazzaarflipper.handlers.steps.sold;
 
 import lombok.Getter;
@@ -13,6 +5,7 @@ import me.lyamray.bazzaarflipper.BazaarflipperClient;
 import me.lyamray.bazzaarflipper.handlers.slot.ClickSlotHandler;
 import me.lyamray.bazzaarflipper.handlers.steps.handler.BaseSteps;
 import me.lyamray.bazzaarflipper.handlers.steps.shared.SharedSteps;
+import me.lyamray.bazzaarflipper.utils.messages.MessageUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.item.ItemStack;
@@ -26,24 +19,37 @@ import java.util.List;
 public class CheckIsSold extends BaseSteps {
 
     @Getter
-    private static CheckIsSold instance = new CheckIsSold();
+    private static final CheckIsSold instance = new CheckIsSold();
 
     private static final int CHECK_SLOT = 10;
-    private static final long random = getInstance().generateDelay();
 
     public void checkIfGemIsFilled(MinecraftClient client, ScreenHandler handler) {
+        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] checkIfGemIsFilled (sold) called"));
+
         if (!(client.currentScreen instanceof HandledScreen<?>)) return;
 
         Slot slot = getSlot(handler, CHECK_SLOT);
-        if (slot == null || !slot.hasStack()) return;
+        if (slot == null) {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Slot " + CHECK_SLOT + " is null"));
+            return;
+        }
+
+        if (!slot.hasStack()) {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Slot " + CHECK_SLOT + " has no stack"));
+            return;
+        }
 
         ItemStack stack = slot.getStack();
         int tooltipLines = getTooltipLines(stack, client);
 
-        if (tooltipLines > 10) { //if sold
-            BazaarflipperClient.getInstance().setSellOrOrder("buy");
+        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Slot " + CHECK_SLOT + " tooltip lines: " + tooltipLines));
+
+        if (tooltipLines >= 10) {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Gem is sold. Executing buy logic"));
+            BazaarflipperClient.getInstance().setSellOrOrder("order");
             gemSold(client, handler);
-        } else { //if not sold
+        } else {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Gem is not sold. Executing sell logic"));
             BazaarflipperClient.getInstance().setSellOrOrder("sell");
             redoSellLogic(client, handler);
         }
@@ -53,11 +59,20 @@ public class CheckIsSold extends BaseSteps {
         long firstDelay = generateDelay();
         long secondDelay = firstDelay + generateDelay();
 
-        runDelayed(() -> ClickSlotHandler.getInstance().clickSlotSimulated(client, CHECK_SLOT, handler), firstDelay);
+        runDelayed(() -> {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Clicking slot " + CHECK_SLOT + " (sold)"));
+            ClickSlotHandler.getInstance().clickSlotSimulated(client, CHECK_SLOT, handler);
+        }, firstDelay);
 
         runDelayed(() -> {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Closing inventory and performing Bazaar command (sold)"));
             SharedSteps.getInstance().closeInventory(client);
-            SharedSteps.getInstance().performBazaarCommand(client, random);
+
+            long delay = generateDelay();
+            SharedSteps.getInstance().performBazaarCommand(client, delay);
+
+            long delay1 = delay + generateDelay();
+            SharedSteps.getInstance().miningLogic(client, delay1);
         }, secondDelay);
     }
 
@@ -66,16 +81,23 @@ public class CheckIsSold extends BaseSteps {
         long secondDelay = firstDelay + generateDelay();
         long thirdDelay = secondDelay + generateDelay();
 
-        runDelayed(() -> ClickSlotHandler.getInstance().clickSlotSimulated(client, CHECK_SLOT, handler), firstDelay);
-
-        runDelayed(() -> ClickSlotHandler.getInstance().clickSlotSimulated(client, 11, handler), secondDelay);
+        runDelayed(() -> {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Clicking slot " + CHECK_SLOT + " (redo sell)"));
+            ClickSlotHandler.getInstance().clickSlotSimulated(client, CHECK_SLOT, handler);
+        }, firstDelay);
 
         runDelayed(() -> {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Clicking slot 11 (redo sell)"));
+            ClickSlotHandler.getInstance().clickSlotSimulated(client, 11, handler);
+        }, secondDelay);
+
+        runDelayed(() -> {
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG] Closing inventory, performing Bazaar command and mining logic"));
             SharedSteps.getInstance().closeInventory(client);
-            SharedSteps.getInstance().performBazaarCommand(client, random);
+            SharedSteps.getInstance().performBazaarCommand(client, generateDelay());
+            SharedSteps.getInstance().miningLogic(client, generateDelay());
         }, thirdDelay);
     }
-
 
     private int getTooltipLines(ItemStack stack, MinecraftClient client) {
         List<Text> tooltip = stack.getTooltip(
@@ -86,4 +108,3 @@ public class CheckIsSold extends BaseSteps {
         return tooltip.size();
     }
 }
-

@@ -35,8 +35,6 @@ public class CommandHandler extends BaseSteps {
         TimerUtil.getInstance().runTaskLater(() -> {
                     SharedSteps.getInstance().performBazaarCommand(client, random);
                     SharedSteps.getInstance().miningLogic(client, random + 500);
-                    SharedSteps.getInstance().leftClickPacket(client);
-
                 }, delay
         );
 

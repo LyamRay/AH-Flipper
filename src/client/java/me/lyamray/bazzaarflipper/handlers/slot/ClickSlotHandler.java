@@ -1,11 +1,3 @@
-/*
- * DISCLAIMER:
- * This mod was intentionally created for a private project of the creator of this mod.
- * Use of this mod on any other server is at your own risk.
- * The creator of this mod is not responsible for any actions, damages, or consequences
- * that may occur from its use outside the intended private project.
- */
-
 package me.lyamray.bazzaarflipper.handlers.slot;
 
 import lombok.Getter;
@@ -16,7 +8,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.Random;
 
@@ -45,7 +36,6 @@ public class ClickSlotHandler {
             double scaleFactor = client.getWindow().getScaleFactor();
             double endX = targetX * scaleFactor;
             double endY = targetY * scaleFactor;
-            long windowHandle = client.getWindow().getHandle();
 
             double startX = lastCursorX;
             double startY = lastCursorY;
@@ -55,7 +45,7 @@ public class ClickSlotHandler {
                 startY = client.mouse.getY() * scaleFactor;
             }
 
-            smoothMoveCursor(windowHandle, startX, startY, endX, endY);
+            smoothMoveCursor(startX, startY, endX, endY);
 
             gui.mouseClicked(targetX, targetY, 0);
 
@@ -70,16 +60,13 @@ public class ClickSlotHandler {
         }
     }
 
-    private void smoothMoveCursor(long window, double startX, double startY, double endX, double endY) {
+    private void smoothMoveCursor(double startX, double startY, double endX, double endY) {
         int steps = 15 + random.nextInt(10);
         double prevX = startX;
         double prevY = startY;
 
-        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
-
         for (int i = 1; i <= steps; i++) {
             double t = i / (double) steps;
-
             double progress = 0.5 - 0.5 * Math.cos(Math.PI * t + random.nextGaussian() * 0.05);
 
             double targetX = startX + (endX - startX) * progress;
@@ -88,8 +75,7 @@ public class ClickSlotHandler {
             double stepX = prevX + (targetX - prevX) * (0.7 + random.nextDouble() * 0.3) + random.nextGaussian() * 0.5;
             double stepY = prevY + (targetY - prevY) * (0.7 + random.nextDouble() * 0.3) + random.nextGaussian() * 0.5;
 
-            GLFW.glfwSetCursorPos(window, stepX, stepY);
-            ((MouseAccessor) MinecraftClient.getInstance().mouse).callOnCursorPos(window, stepX, stepY);
+            ((MouseAccessor) MinecraftClient.getInstance().mouse).callOnCursorPos(0, stepX, stepY);
 
             prevX = stepX;
             prevY = stepY;
@@ -99,10 +85,7 @@ public class ClickSlotHandler {
             } catch (InterruptedException ignored) {}
         }
 
-        GLFW.glfwSetCursorPos(window, endX, endY);
-        ((MouseAccessor) MinecraftClient.getInstance().mouse).callOnCursorPos(window, endX, endY);
-
-        GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+        ((MouseAccessor) MinecraftClient.getInstance().mouse).callOnCursorPos(0, endX, endY);
     }
 
     private int randomOffset() {
