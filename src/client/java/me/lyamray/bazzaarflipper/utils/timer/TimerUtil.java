@@ -11,8 +11,9 @@ package me.lyamray.bazzaarflipper.utils.timer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class TimerUtil {
@@ -20,36 +21,17 @@ public class TimerUtil {
     @Getter
     private static final TimerUtil instance = new TimerUtil();
 
-    private final Timer timer = new Timer(true);
+    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public void runTaskLater(Runnable task, long delay) {
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    task.run();
-                } catch (Exception e) {
-                    log.error("Error in scheduled task", e);
-                }
-            }
-        }, delay);
+        scheduler.schedule(task, delay, TimeUnit.MILLISECONDS);
     }
 
-    public void runTaskTimer(Runnable task, long delay, long period) {
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    task.run();
-                } catch (Exception e) {
-                    log.error("Error in repeating task", e);
-                }
-            }
-        }, delay, period);
-    }
 
     public void cancelAll() {
-        timer.cancel();
-        log.info("All scheduled tasks canceled");
+        if (scheduler != null && !scheduler.isShutdown()) {
+            scheduler.shutdownNow();
+            scheduler = Executors.newScheduledThreadPool(1);
+        }
     }
 }

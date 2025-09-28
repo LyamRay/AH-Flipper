@@ -8,7 +8,6 @@
 
 package me.lyamray.bazzaarflipper.handlers.steps.handler;
 
-import me.lyamray.bazzaarflipper.BazaarflipperClient;
 import me.lyamray.bazzaarflipper.mixin.client.HandledScreenAccessor;
 import me.lyamray.bazzaarflipper.utils.random.RandomLong;
 import me.lyamray.bazzaarflipper.utils.timer.TimerUtil;
@@ -32,14 +31,5 @@ public abstract class BaseSteps {
 
     protected long generateDelay() {
         return RandomLong.generateRandomLong();
-    }
-
-    protected Slot getSlot(ScreenHandler handler, int index) {
-        if (handler == null) return null;
-        return handler.getSlot(index);
-    }
-
-    protected String getMode() {
-        return BazaarflipperClient.getInstance().getSellOrOrder();
     }
 }

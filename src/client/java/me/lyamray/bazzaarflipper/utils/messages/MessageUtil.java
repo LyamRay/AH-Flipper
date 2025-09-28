@@ -26,21 +26,10 @@ public class MessageUtil {
                 .appendNewline();
     }
 
-    public Component makeComponent(String message, String message2) {
-        return Component.empty()
-                .appendNewline()
-                .append(MessageUtil.deserialize(message))
-                .appendNewline()
-                .appendNewline()
-                .append(MessageUtil.deserialize(message2)
-                .appendNewline());
-    }
-
     public void sendMessage(Component component) {
         Audience audience = MinecraftClientAudiences.of().audience();
         audience.sendMessage(component);
     }
-
 
     public Component deserialize(String miniMessageText) {
         return MINI_MESSAGE.deserialize(miniMessageText);

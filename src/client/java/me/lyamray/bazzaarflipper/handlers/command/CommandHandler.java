@@ -27,14 +27,15 @@ public class CommandHandler extends BaseSteps {
         if (client == null) return;
 
         BazaarflipperClient.getInstance().setGem(gem);
-        BazaarflipperClient.getInstance().setSellOrOrder("order");
+        BazaarflipperClient.getInstance().setFilled(false);
+        BazaarflipperClient.getInstance().setSold(false);
 
         long delay = RandomLong.generateRandomLong();
         long random = generateDelay();
 
         TimerUtil.getInstance().runTaskLater(() -> {
                     SharedSteps.getInstance().performBazaarCommand(client, random);
-                    SharedSteps.getInstance().miningLogic(client, random + 500);
+                    SharedSteps.getInstance().miningLogic(client, random + 500, "order");
                 }, delay
         );
 
@@ -52,6 +53,9 @@ public class CommandHandler extends BaseSteps {
         MessageUtil.sendMessage(MessageUtil.makeComponent(stopMessage));
 
         BazaarflipperClient.getInstance().setGem(null);
-        BazaarflipperClient.getInstance().setSellOrOrder(null);
+        BazaarflipperClient.getInstance().setFilled(false);
+        BazaarflipperClient.getInstance().setSold(false);
+
+        TimerUtil.getInstance().cancelAll();
     }
 }

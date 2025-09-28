@@ -14,8 +14,6 @@ import me.lyamray.bazzaarflipper.utils.timer.TimerUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.screen.ScreenHandler;
 
-import java.util.function.Consumer;
-
 public abstract class AbstractGemStep extends BaseSteps {
 
     protected int getGemSlot(String gemName) {
@@ -34,15 +32,5 @@ public abstract class AbstractGemStep extends BaseSteps {
             ClickSlotHandler.getInstance().clickSlotSimulated(client, slotIndex, handler);
             if (nextTask != null) nextTask.run();
         }, delay);
-    }
-
-    protected void executeByMode(MinecraftClient client, Consumer<String> orderTask, Consumer<String> sellTask) {
-        String mode = getMode();
-        if (mode == null) return;
-
-        switch (mode) {
-            case "order" -> orderTask.accept(mode);
-            case "sell" -> sellTask.accept(mode);
-        }
     }
 }

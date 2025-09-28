@@ -1,3 +1,11 @@
+/*
+ * DISCLAIMER:
+ * This mod was intentionally created for a private project of the creator of this mod.
+ * Use of this mod on any other server is at your own risk.
+ * The creator of this mod is not responsible for any actions, damages, or consequences
+ * that may occur from its use outside the intended private project.
+ */
+
 package me.lyamray.bazzaarflipper.handlers.steps.order;
 
 import lombok.Getter;
@@ -12,58 +20,40 @@ public class OrderSteps extends AbstractGemStep {
     @Getter
     private static final OrderSteps instance = new OrderSteps();
 
-    private static final long random = getInstance().generateDelay();
+    private static final long RANDOM_DELAY = getInstance().generateDelay();
 
-    public void chooseWhichGem(MinecraftClient client) {
-        int slot = getGemSlot(BazaarflipperClient.getInstance().getGem());
-        if (slot == -1) {
-            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] chooseWhichGem: No gem slot found"));
-            return;
-        }
+    private static final int BEST_GEM_SLOT = 15;
+    private static final int BUY_ONE_GEM_SLOT = 10;
+    private static final int CONFIRM_ORDER_SLOT = 13;
 
-        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Choosing gem slot: " + slot));
-        long delay = generateDelay();
-        clickSlot(client, slot, delay,() -> {
-            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Finished choosing gem, calling clickBestGemSlot"));
-            SharedSteps.getInstance().clickBestGemSlot(client);
-        });
+    public void chooseWhichGem(final MinecraftClient client) {
+        final int slot = getGemSlot(BazaarflipperClient.getInstance().getGem());
+        if (slot == -1) return;
+
+        clickSlot(client, slot, generateDelay(),
+                () -> SharedSteps.getInstance().clickBestGemSlot(client, "order"));
     }
 
-    public void createBuyOrder(MinecraftClient client) {
-        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Creating buy order, clicking slot 15"));
-        long delay = generateDelay();
-        clickSlot(client, 15, delay,() -> {
-            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Finished clicking slot 15, calling buyOneGem"));
-            buyOneGem(client);
-        });
+    public void createBuyOrder(final MinecraftClient client) {
+        clickSlot(client, BEST_GEM_SLOT, generateDelay(),
+                () -> buyOneGem(client));
     }
 
-    public void buyOneGem(MinecraftClient client) {
-        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Clicking slot 10 to buy one gem"));
-        long delay = generateDelay();
-        clickSlot(client, 10, delay,() -> {
-            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Finished buying one gem, calling alwaysBeOnTop"));
-            SharedSteps.getInstance().alwaysBeOnTop(client);
-        });
+    public void buyOneGem(final MinecraftClient client) {
+        clickSlot(client, BUY_ONE_GEM_SLOT, generateDelay(),
+                () -> SharedSteps.getInstance().alwaysBeOnTop(client, "order"));
     }
 
-    public void confirmOrder(MinecraftClient client) {
-        MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Confirming order, clicking slot 13"));
+    public void confirmOrder(final MinecraftClient client) {
+        final long delay = generateDelay();
 
-        long delay = generateDelay();
-
-        clickSlot(client, 13, delay,() -> {
+        clickSlot(client, CONFIRM_ORDER_SLOT, delay, () -> {
             String message = "<color:#c9ffe2>Je hebt succesvol een buy-order geplaatst!</color>";
-            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Order confirmed: " + message));
-            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Scheduling inventory close and bazaar command in " + delay + "ms"));
-            SharedSteps.getInstance().performBazaarCommand(client, random);
+            MessageUtil.sendMessage(MessageUtil.makeComponent(message));
+            SharedSteps.getInstance().performBazaarCommand(client, RANDOM_DELAY);
         });
 
-        long delay1 = delay + generateDelay();
-
-        runDelayed(() -> {
-            MessageUtil.sendMessage(MessageUtil.makeComponent("[DEBUG][OrderSteps] Scheduling manageOrders in " + delay1 + "ms"));
-            SharedSteps.getInstance().manageOrders(client);
-        }, delay1);
+        runDelayed(() -> SharedSteps.getInstance().manageOrders(client, "order"),
+                delay + generateDelay());
     }
 }

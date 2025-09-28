@@ -8,6 +8,7 @@
 
 package me.lyamray.bazzaarflipper;
 
+import com.mojang.authlib.GameProfile;
 import lombok.Getter;
 import lombok.Setter;
 import me.lyamray.bazzaarflipper.handlers.command.CommandHandler;
@@ -15,9 +16,14 @@ import me.lyamray.bazzaarflipper.utils.messages.Gems;
 import me.lyamray.bazzaarflipper.utils.messages.MessageUtil;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.message.MessageType;
+import net.minecraft.network.message.SignedMessage;
+import net.minecraft.text.Text;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -29,25 +35,28 @@ public class BazaarflipperClient implements ClientModInitializer {
     private static BazaarflipperClient instance;
     private MinecraftClient client;
     private String gem = null;
-    private String sellOrOrder = null;
+    private boolean filled = false;
+    private boolean sold = false;
 
+    @Override
     public void onInitializeClient() {
         instance = this;
         startClientTick();
         endClientTick();
         clientSendMessageEvents();
+        clientReceiveChatMessages();
     }
 
     private void startClientTick() {
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
-            if (client.world == null && client.player == null) return;
+            if (client.world == null || client.player == null) return;
             this.client = client;
         });
     }
 
     private void endClientTick() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.world == null && client.player == null) return;
+            if (client.world == null || client.player == null) return;
             this.client = client;
         });
     }
@@ -89,5 +98,50 @@ public class BazaarflipperClient implements ClientModInitializer {
             }
             return false;
         });
+    }
+
+    private void clientReceiveChatMessages() {
+        ClientReceiveMessageEvents.CHAT.register(this::handleChatMessage);
+        ClientReceiveMessageEvents.GAME.register(this::handleSystemMessage);
+    }
+
+    private void handleSystemMessage(Text message, boolean overlay) {
+        if (message == null) return;
+
+        String rawMsg = message.getString();
+        String msg = rawMsg.replaceAll("§[0-9A-FK-ORa-fk-or]", "");
+
+        System.out.println("SYSTEM RAW: [" + rawMsg + "]");
+        System.out.println("SYSTEM MSG: [" + msg + "]");
+
+        if (msg.contains("[Bazaar]") && msg.contains("Buy Order") && msg.contains("was filled")) {
+            filled = true;
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[GG] Je buy-order is gefilled!"));
+        } else if (msg.contains("[Bazaar]") && msg.contains("Sell Offer") && msg.contains("was filled")) {
+            sold = true;
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[GG] Je sell-offer is gesold!"));
+        }
+    }
+
+    private void handleChatMessage(Text message, SignedMessage signedMessage,
+                                   GameProfile sender, MessageType.Parameters params,
+                                   Instant receptionTimestamp) {
+        if (message == null) return;
+
+        String rawMsg = message.getString();
+        String msg = rawMsg.replaceAll("§[0-9A-FK-ORa-fk-or]", "");
+
+        MessageUtil.sendMessage(MessageUtil.makeComponent(msg));
+
+        System.out.println("CHAT RAW: [" + rawMsg + "]");
+        System.out.println("CHAT MSG: [" + msg + "]");
+
+        if (msg.contains("[Bazaar]") && msg.contains("Buy Order") && msg.contains("was filled")) {
+            filled = true;
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[GG] Je buy-order is gefilled!"));
+        } else if (msg.contains("[Bazaar]") && msg.contains("Sell Offer") && msg.contains("was sold")) {
+            sold = true;
+            MessageUtil.sendMessage(MessageUtil.makeComponent("[GG] Je sell-offer is gesold!"));
+        }
     }
 }

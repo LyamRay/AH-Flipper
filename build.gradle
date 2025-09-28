@@ -68,9 +68,6 @@ tasks.named('shadowJar') {
         include '**/*.png' // include any other resources your mod needs
         into '' // put them at the root of the JAR
     }
-
-    // Only relocate external libraries if needed, do NOT relocate your own packages
-    // Example: relocate("net.kyori", "bazaarflipper.libs.net.kyori")
 }
 
 tasks.named('shadowJar') {
